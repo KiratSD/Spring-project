@@ -7,10 +7,12 @@ import com.example.demo.web.dto.VoteDtos.CastVoteRequest;
 import com.example.demo.web.dto.VoteDtos.VoteResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/polls")
 public class PollController {

@@ -6,9 +6,11 @@ import com.example.demo.web.dto.UserDtos.CreateUserRequest;
 import com.example.demo.web.dto.UserDtos.UserResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
