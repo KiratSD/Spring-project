@@ -90,4 +90,11 @@ public class PollManager {
     public List<Map.Entry<Long, VoteRecord>> listVotes(long pollId) {
         return new ArrayList<>(votesByPoll.getOrDefault(pollId, Map.of()).entrySet());
     }
+
+    public Optional<Long> optionIdByOrder(long pollId, int order) {
+        var list = optionsByPoll.getOrDefault(pollId, List.of());
+        if (order < 0 || order >= list.size()) return Optional.empty();
+        return Optional.of((long) (order + 1));
+    }
+
 }

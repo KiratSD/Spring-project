@@ -28,6 +28,11 @@ dependencies {
     implementation("com.h2database:h2:2.3.232")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+
+    implementation("org.springframework.boot:spring-boot-starter-amqp")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+
 }
 
 tasks.withType<Test> {

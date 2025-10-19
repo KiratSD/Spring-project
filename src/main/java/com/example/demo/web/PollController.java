@@ -5,9 +5,14 @@ import com.example.demo.web.dto.PollDtos.CreatePollRequest;
 import com.example.demo.web.dto.PollDtos.PollResponse;
 import com.example.demo.web.dto.VoteDtos.CastVoteRequest;
 import com.example.demo.web.dto.VoteDtos.VoteResponse;
+
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.CrossOrigin;
+
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import static com.example.demo.messaging.RabbitConfig.POLLS_EXCHANGE;
+import com.example.demo.messaging.VoteEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +21,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/polls")
 public class PollController {
+
     private final PollManager store;
-    public PollController(PollManager store) { this.store = store; }
+    private final RabbitTemplate rabbitTemplate;
+
+    public PollController(PollManager store, RabbitTemplate rabbitTemplate) {
+        this.store = store;
+        this.rabbitTemplate = rabbitTemplate;
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -58,14 +69,20 @@ public class PollController {
     }
 
     @PostMapping("/{pollId}/votes")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void vote(@PathVariable long pollId, @RequestBody CastVoteRequest req) {
-        long userId = store.userIdByUsername(req.username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + req.username));
-        if (!store.optionBelongsToPoll(pollId, req.optionId))
-            throw new IllegalArgumentException("Option not in poll");
-        store.castOrChangeVote(pollId, userId, req.optionId);
+    public ResponseEntity<Void> vote(@PathVariable long pollId, @RequestBody CastVoteRequest req) {
+        rabbitTemplate.convertAndSend(
+                POLLS_EXCHANGE,
+                "poll." + pollId + ".vote",
+                new VoteEvent(
+                        pollId,
+                         req.optionId,
+                         null,
+                         req.username
+                )
+        );
+        return ResponseEntity.accepted().build();
     }
+
 
     @GetMapping("/{pollId}/votes")
     public List<VoteResponse> listVotes(@PathVariable long pollId,
